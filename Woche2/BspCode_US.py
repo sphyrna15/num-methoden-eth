@@ -17,11 +17,17 @@ def MPR(f, a, b, N):
 
 """ Trapezregel """
 
-
+def trapezoid(f, a, b, N):
+    x, h = np.linspace(a, b, N+1, retstep = True)
+    I = h * (np.sum(f(x[1:-1])) + 0.5 * (f(x[0]) + f(x[-1])))
+    return I
 
 """ Simpsonregel """
 
-
+def simpson(f,a ,b ,N):
+    x, h = np.linspace(a, b, N+1, retstep = True)
+    I = h/6 * (f(a) + 2*np.sum(f(x[1:-1])) + 4*np.sum(f((x[:-1] + x[1:]) * 0.5)) + f(b)) 
+    return I
 
 """ Exp Konvergenz """
 
