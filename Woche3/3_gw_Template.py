@@ -91,9 +91,10 @@ def composite_legendre(f, a, b, N, n):
     # Implementieren Sie hier eine zusammengesetzte #
     # Gauss-Legendre Quadraturregel                 #
     
-    nodes, weights = gw_legendre(n)
-    split = linspace(a, b, N+1)
+    x, h = np.linspace(a, b, N+1, retstep = True)
     
+    F = np.vectorize(legendre)
+    I = np.sum(F(f, x[:-1], x[1:], n)) 
     
     return I
 
