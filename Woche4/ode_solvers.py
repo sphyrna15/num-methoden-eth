@@ -14,10 +14,10 @@ def integrate(method, rhs, y0, T, N):
      """
     y = np.empty((N+1,) + y0.shape)
 
-    t0, dt = 0, 0 # TODO: implement
+    t0, dt = 0, T/N # TODO: implement
     y[0,...] = y0
     for i in range(0, N):
-        y[i+1,...] = 0.0 # TODO: implement
+        y[i+1,...] = method(rhs, y[i,...], t0 + i*dt, dt) # TODO: implement done
 
     t = np.arange(N+1)*dt
     return t, y
@@ -30,7 +30,7 @@ def explicit_euler_step(rhs, y0, t0, dt):
          t0 : Aktuelle Zeit.
          dt : Länge des Zeitschritts.
     """
-    return 0.0  # TODO: implement
+    return y0 + dt*rhs(t0, y0)  # TODO: implement done
 
 def explicit_euler(rhs, y0, T, N):
     return integrate(explicit_euler_step, rhs, y0, T, N)
