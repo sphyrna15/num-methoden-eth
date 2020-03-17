@@ -19,17 +19,17 @@ def pendulum_rhs(t, y):
            y[0] : Winkel.
            y[1] : Winkelgeschwindigkeit.
     """
-    # TODO: implement
-    return 0.0
+    # TODO: implement done
+    return np.array([y[...,1], -omega2() * np.sin(y[...,0])])
 
-def pendulum_verlet_rhs(t, alpha):
+def pendulum_verlet_rhs(t, y):
     """ Rechte Seitde der Pendelgleichung für velocity-Verlet.
 
         t : aktuelle Zeit.
         y : Aproximativer Winkel zur Zeit `t`.
     """
-    # TODO: implement
-    return 0.0
+    # TODO: implement done
+    return np.array([-omega2() * np.sin(y[...,0])])
 
 def convergence_rate(errors, resolutions):
     """ Berechnet die Konvergenzrate. """
@@ -49,8 +49,9 @@ def ex2_d():
     for method, rhs in zip(all_methods, all_rhs):
         error = np.empty(resolutions.size)
         for k, N in enumerate(resolutions):
-            # TODO: Berechen Sie die Lösung und den Fehler
-            error[k] = 1.0
+            # TODO: Berechen Sie die Lösung und den Fehler done
+            _, y = method(rhs, y0, T, N)
+            error[k] = abs(y[-1, 0] - y[-1, 0])
 
         rate = convergence_rate(error, resolutions)
         print(method)
@@ -63,8 +64,8 @@ def potential_energy(y):
             Achse 0: Zeitschritte
             Achse 1: Winkel & Geschwindigkeit.
     """
-    # TODO: Berechnen Sie die potenzielle Energie
-    return 0.0
+    # TODO: Berechnen Sie die potenzielle Energie done
+    return omega2() * (1.0 - np.cos(y[:,0]))
 
 def kinetic_energy(y):
     """ Berechnet die kinetische Energie von `y`.
@@ -73,8 +74,12 @@ def kinetic_energy(y):
             Achse 0: Zeitschritte
             Achse 1: Winkel & Geschwindigkeit.
     """
-    # TODO: Berechnen Sie die kinetische Energie
-    return 0.0
+    # TODO: Berechnen Sie die kinetische Energie done
+    return 0.5 * (y[:,1]**2)
+
+def create_y_plots(y):
+    plt.clf()
+    plt.plot(y[:,0], y[:,1])
 
 def create_plots(t, y, filename):
     E_pot = potential_energy(y)
@@ -89,8 +94,8 @@ def create_plots(t, y, filename):
     plt.ylabel("Energy")
     plt.xlabel("Time")
 
-    plt.savefig(filename + ".eps")
-    plt.savefig(filename + ".png")
+    # plt.savefig(filename + ".eps")
+    # plt.savefig(filename + ".png")
     plt.show()
 
 def ex2_e():
@@ -103,14 +108,16 @@ def ex2_e():
 
     for method, rhs, filename in zip(all_methods, all_rhs, all_filenames):
         t, y = method(rhs, y0, T, N)
+        create_y_plots(y)
         create_plots(t, y, filename)
 
-def ex2_f():
-    # TODO Benutzen Sie timeit um die Laufzeit zu messen.
+# def ex2_f():
+#     # TODO Benutzen Sie timeit um die Laufzeit zu messen.
+    
 
 
 
 if __name__ == '__main__':
     ex2_d()
     ex2_e()
-    ex2_f()
+    # ex2_f()

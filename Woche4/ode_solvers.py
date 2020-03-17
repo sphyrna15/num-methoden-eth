@@ -46,10 +46,10 @@ def implicit_euler_step(rhs, y0, t0, dt):
          t0 : Die aktuelle Zeit.
          dt : Länge des aktuellen Zeitschritts.
     """
-     # TODO: Implementieren Sie das nicht-lineare Gleichungssystem.
-    F = lambda y: 0.0
+     # TODO: Implementieren Sie das nicht-lineare Gleichungssystem. done
+    F = lambda y: y - y0 - dt * rhs(t0+dt, y)
 
-    initial_guess = 0.0  # TODO: implementieren Sie einen besseren Startwert
+    initial_guess = y0 + dt * rhs(t0, y0)  # TODO: implementieren Sie einen besseren Startwert done
     return scipy.optimize.fsolve(F, initial_guess)
 
 def implicit_euler(rhs, y0, T, N):
@@ -60,7 +60,10 @@ def implicit_mid_point_step(rhs, y0, t0, dt):
 
     Siehe `implicit_euler_step` für Dokumentation der Argumente.
     """
-    return 0.0 # TODO: vgl. `implicit_euler_step`
+    F = lambda y: y - y0 - dt * rhs(0.5*(t0 + (dt+t0)), 0.5*(y0 + y))  # TODO: vgl. `implicit_euler_step` done
+    
+    initial_guess = y0 + dt * rhs(t0, y0)
+    return scipy.optimize.fsolve(F, initial_guess)
 
 def implicit_mid_point(rhs, y0, T, N):
     return integrate(implicit_mid_point_step, rhs, y0, T, N)
@@ -85,6 +88,8 @@ def velocity_verlet_step(rhs, xv0, t0, dt):
     v0, v1 = xv0[1,:], xv1[1,:]
 
     # TODO: Updaten Sie die Werte in `xv1` mittels velocity_verlet.
+    x1[:] = x0 + dt*v0 + ((dt**2)*0.5) * rhs(t0, x0)
+    v1[:] = v0+ 0.5* dt*(rhs(t0, x0) + rhs(t0+dt, x1))
 
     return xv1.reshape(-1)
 
