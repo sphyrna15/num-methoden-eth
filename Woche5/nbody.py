@@ -20,7 +20,18 @@ def nbody_pdot(t, q, m, G):
     dpdt = np.empty_like(q)
 
     # TODO Berechnene sie die zeitliche Ableitung von `p`
-
+    # wir nutzen die Formel aus der Aufgabe
+    n_bodies = q.shape[0]
+    
+    for k in range(n_bodies):
+        norm_dq = np.linalg.norm((q - q[k,:]), axis = 1) ** 3
+        norm_dq = norm_dq.reshape((-1,1))
+        # print("norm shape = %s" %str(norm_dq.shape))
+        sum_term = m * m[k,:] * (q - q[k,:]) / norm_dq
+        # print("sumterm shape = %s" % str(sum_term.shape))
+        
+        dpdt[k,:] = G * (np.sum(sum_term[:k,:], axis = 0) + np.sum(sum_term[k+1:,:], axis = 0))
+        
     return dpdt
 
 def nbody_rhs(t, y, m, G, shape):
@@ -37,12 +48,13 @@ def nbody_rhs(t, y, m, G, shape):
     y = y.reshape(shape)
     q, p = y[0,...], y[1,...]
     m = m.reshape((-1,1))
+    print(q, p)
 
     dydt = np.empty_like(y)
 
     # TODO: implement
-    dydt[0,...] =
-    dydt[1,...] =
+    dydt[0,...] = None
+    dydt[1,...] = None
 
     return dydt.reshape(-1)
 
@@ -60,7 +72,7 @@ def nbody_verlet_rhs(t, q, m, G, shape):
     q = q.reshape(shape[1:])
 
     # TODO Implementieren Sie die rechte Seite für velocity-Verlet.
-    verlet_rhs =
+    verlet_rhs = None
     return verlet_rhs.reshape(-1)
 
 def plot_orbits(y, filename):
@@ -105,12 +117,13 @@ def nbody_simulation(y0, m, T, N, G, figure_basename):
 
 def ex3_c():
     # TODO: Setzen Sie Anfangswerte
-    m =
-    G =
-    y0 =
+    m = None 
+    G = None 
+    y0 = None 
 
     # TODO: Setzen Sie Integrationsparameter
-    T, N =
+    T, N = None 
+    
 
     nbody_simulation(y0, m, T, N, G, "two_body")
 
