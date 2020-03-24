@@ -10,8 +10,11 @@ def lennard_acceleration(xy):
     """
     # TODO: implementieren Sie den Gradient des Lennard-Jones
     #   Potentials.
-
-    return np.zeros_like(xy)
+    
+    r = np.linalg.norm(xy)
+    rdotdot = 24 * xy * (2/(r **14) - 1/(r**8))
+  
+    return rdotdot
 
 def einschritt_stoermer_verlet(rhs, xy0, v0, n_steps, t_end):
     """ Einschritt Störmer-Verlet für ein Teilchen.
@@ -31,7 +34,19 @@ def einschritt_stoermer_verlet(rhs, xy0, v0, n_steps, t_end):
     xy = np.zeros((n_steps+1,2))
     v = np.zeros((n_steps+1,2))
 
-    # TODO: Implementieren Sie das Einschritt Störmer-Verlet Verfahren.
+    # TODO: Implementieren Sie das Einschritt Störmer-Verlet Verfahren. done
+    
+    # Formeln aus Skript
+    
+    # Startwerte
+    xy[0,:] = xy0
+    vtemp = v0 + dt/2 * rhs(xy0)
+    
+    #Formel aus Skript
+    for k in range(n_steps):
+        xy[k+1,:] = xy[k,:] + dt*vtemp
+        vtemp += dt*rhs(xy[k+1])
+
 
     return t, xy
 
@@ -56,7 +71,17 @@ def zweischritt_stoermer_verlet(rhs, xy0, v0, n_steps, t_end):
     xy = np.zeros((n_steps+1, 2))
 
     # TODO: Implementieren Sie das Zweischritt Störmer-Verlet Verfahren.
-
+    
+    # Auch hier nutzen wir wieder einfach die formeln aus dem Skript
+    
+    #Startwerte
+    xy[0,:] = xy0
+    xy[1,:] = xy0 + dt*v0 + (dt**2)/2 * rhs(xy0)
+    
+    #Formel
+    for k in range(1, n_steps):
+        xy[k+1,:] = -xy[k-1,:] + 2*xy[k,:] + (dt**2)/2 * rhs(xy[k])
+    
     return t, xy
 
 def simulate_trajectories(solver, label):
@@ -68,6 +93,17 @@ def simulate_trajectories(solver, label):
 
     # TODO: Berechnen Sie die Trajektorien der gefragten Teilchen
     #   und plotten Sie die Trajektorien.
+     
+    bgrid = np.linspace(0, 3, 20)
+    t_end = 15
+    dt = 0.02
+    n_steps = int(t_end/dt)
+    
+    for b in bgrid:
+        xy0 = np.array([-10, b])
+        v0 = np.array([1, 0])
+        t, xy = solver(lennard_acceleration, xy0, v0, n_steps, t_end)
+        plt.plot(xy[:,0], xy[:,1])
 
     plt.grid(True)
     plt.xlabel('$x$')
