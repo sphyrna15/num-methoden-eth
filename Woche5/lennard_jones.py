@@ -11,9 +11,12 @@ def lennard_acceleration(xy):
     # TODO: implementieren Sie den Gradient des Lennard-Jones
     #   Potentials.
     
-    r = np.linalg.norm(xy)
-    rdotdot = 24 * xy * (2/(r **14) - 1/(r**8))
-  
+    x, y = xy[0], xy[1]
+    r2 = (x**2) + (y**2)
+    
+    # Mit Wolframalpha finden wir für den Gradient
+    
+    rdotdot = xy * 24 * (2 / (r2**7) - (r2**3) / (r2**7))
     return rdotdot
 
 def einschritt_stoermer_verlet(rhs, xy0, v0, n_steps, t_end):
@@ -112,10 +115,10 @@ def simulate_trajectories(solver, label):
     plt.savefig(label + ".eps")
     plt.savefig(label + ".png")
 
-if __name__ == '__main__':
-    simulate_trajectories(einschritt_stoermer_verlet, "einschritt_stoermer_verlet")
-    plt.show()
+# if __name__ == '__main__':
+#     simulate_trajectories(einschritt_stoermer_verlet, "einschritt_stoermer_verlet")
+#     plt.show()
 
-    simulate_trajectories(zweischritt_stoermer_verlet, "zweischritt_stoermer_verlet")
-    plt.show()
+#     simulate_trajectories(zweischritt_stoermer_verlet, "zweischritt_stoermer_verlet")
+#     plt.show()
 
