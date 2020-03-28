@@ -67,8 +67,10 @@ def integrate(method, y0, t_end, n_steps):
 
 def strang_splitting_step(Phi_a, Phi_b, y0, dt):
     # TODO implement
-
-    return np.zeros_like(y0) # FIXME
+    # Beim Strang splitting müssen wir die Formel verwenden, um die Evolutionsoperatoren
+    # Phi_a und Phi_b zu kombinieren: Phi = Phi_a(Phi_b(Phi_a(y0, dt/2), dt), dt/2)
+    
+    return Phi_a(Phi_b(Phi_a(y0, dt/2), dt), dt/2) # FIXME done 
 
 def strang_splitting(Phi_a, Phi_b, y0, t_end, n_steps):
     method = lambda y, dt : strang_splitting_step(Phi_a, Phi_b, y, dt)
@@ -80,12 +82,12 @@ if __name__ == "__main__":
     t_end = 100.0
     n_steps = 1000
 
-    #t, y = strang_splitting(Phi_rot, Phi_stretch, y0, t_end, n_steps)
+    t, y = strang_splitting(Phi_rot, Phi_stretch, y0, t_end, n_steps)
 
     t_ode45, y_ode45 = ode45(rhs, [0, t_end], y0)
 
-    #plt.plot(y[:,0], y[:,1],label = "Strang")
+    plt.plot(y[:,0], y[:,1],label = "Strang")
     plt.plot(y_ode45[:,0], y_ode45[:,1],label = "ode45")
     plt.legend(loc='best')
-    plt.savefig("spiral.pdf")
+    # plt.savefig("spiral.pdf")
     plt.show()
