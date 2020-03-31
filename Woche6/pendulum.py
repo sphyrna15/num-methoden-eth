@@ -63,11 +63,11 @@ def phiB(u, dt):
     # TODO: Implement done
     q = u[0]
     if mu == 0:
-       p = u[1] + A*np.sin(omega*u[2]) - dt*(np.sin(u[0])) 
+       p = u[1] + A*dt*np.sin(omega*u[2]) - dt*(np.sin(u[0])) 
     else:
-       p = u[1] + (1/mu)*(np.sin(u[0]) - A*np.sin(omega*u[2]))*np.exp(-mu*dt) - (1/mu)*(np.sin(u[0]) - A*np.sin(omega*u[2])) 
+       p = (u[1] + (1/mu)*(np.sin(u[0]) - A*np.sin(omega*u[2])))*np.exp(-mu*dt) - (1/mu)*(np.sin(u[0]) - A*np.sin(omega*u[2])) 
     
-    t = u[2] + dt
+    t = u[2]
     
     return np.array([q, p, t])
 
