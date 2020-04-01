@@ -100,8 +100,8 @@ def plot_orbits(y, filename):
     for k in range(y.shape[2]):
         plt.plot(y[:,0,k,0], y[:,0,k,1])
 
-    plt.savefig(filename + ".png")
-    plt.savefig(filename + ".eps")
+    # plt.savefig(filename + ".png")
+    # plt.savefig(filename + ".eps")
     plt.show()
 
 def nbody_simulation(y0, m, T, N, G, figure_basename):

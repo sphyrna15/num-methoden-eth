@@ -175,7 +175,8 @@ for t, y, m in zip(tSplit2, ySplit2, methods):
 plt.xlabel("Time")
 plt.ylabel("Energy, mu null")
 plt.legend(loc="best")
-plt.grid() 
+plt.grid()
+plt.show() 
 
 plt.figure()
 plt.plot(y452[:,0], y452[:,1], label = "RK45")
