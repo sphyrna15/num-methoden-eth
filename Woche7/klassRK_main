@@ -1,0 +1,67 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Apr  7 09:25:36 2020
+
+@author: v1per
+"""
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+from klassRK import klassRK
+
+
+""" definiere Zielfunktion und exakte Lösung """
+
+f = lambda t,y: np.array([y[1], -101*y[0] - 2*y[1]])
+f_exact = lambda t: np.exp(-t) * np.cos(10*t)
+
+""" Die Anfangswerte """
+
+y0 = np.array([1, -1])
+T = np.array([0, 3])
+
+""" Führe klassRK aus mit Anfangswerten """
+
+t, y = klassRK(f, y0, T, 50)
+t_grid = np.linspace(T[0], T[-1], 1000)
+
+exact = f_exact(t_grid)
+
+plt.figure()
+plt.plot(t, y[0, :], 'r-o', label = "klassRK")
+plt.plot(t_grid, exact, 'g', label = "Exact Solution")
+plt.xlabel("$y(t)$")
+plt.ylabel("Time")
+plt.title("Approximate $y(t)$ with KlassRK")
+plt.legend()
+plt.grid()
+plt.show()
+
+
+""" Konvergenzplot erstellen """
+
+res = 2**np.arange(5,12)
+
+errRK = np.empty(res.shape)
+
+for k, N_res in enumerate(res):
+    t, y = klassRK(f, y0, T, N_res)
+    exct = f_exact(t)
+    errRK[k] = np.linalg.norm(y[0,:] - exct[:])
+
+plt.figure()
+plt.loglog(res, errRK, 'r', label = "klassRK")
+plt.loglog(res, (1.*res)**(-1), ':k', label = "$n^{-1}$")
+plt.loglog(res, (1.*res)**(-3), ':b', label = "$n^{-3}$")
+plt.loglog(res, (1.*res)**(-4), ':g', label = "$n^{-4}$")
+
+plt.xlabel("Anzahl Intervalle")
+plt.ylabel("$y(t) - y_N$")
+plt.title("Konvergenzordnung")
+plt.legend(loc="best")
+plt.grid()
+plt.show()
+    
+

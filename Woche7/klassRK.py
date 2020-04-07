@@ -34,4 +34,12 @@ def klassRK(f, y0, T, N):
 def rkStep(f, y0, t0, h):
     # Berechnet einen RK-Schritt der Schrittweite h
     # TODO: Implement RK-Schritt
-    return y0
+    
+    k1 = f(t0, y0)
+    k2 = f(t0 + 0.5*h, y0 + h*(0.5*k1))
+    k3 = f(t0 + 0.5*h, y0 + h*(0.5*k2))
+    k4 = f(t0 + h, y0 + h*1.*k3)
+    
+    y1 = y0 + h*((1/6.)*k1 + (1/3.)*k2 + (1/3.)*k3 + (1/6.)*k4)
+    
+    return y1
