@@ -43,7 +43,6 @@ plt.show()
 """ Konvergenzplot erstellen """
 
 res = 2**np.arange(5,12)
-
 errRK = np.empty(res.shape)
 
 for k, N_res in enumerate(res):
