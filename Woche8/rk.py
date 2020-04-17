@@ -57,7 +57,15 @@ class RungeKutta(object):
         #                                                                               #
         # Hinweis: Rufen Sie die Klassen-Methode self._step geeignet auf.               #
         #                                                                               #
-        #################################################################################
+        ##########################         DONE         #################################
+        
+        h = (Tend - self._T0) / float(steps)
+        u[-1,0] = self._T0
+        u[:-1,0] = self._IV
+        
+        for k in range(steps):
+            u[:, k+1] = self._step(u[:,k], h )         
+            
         return u[-1,:], u[:-1,:]
 
 
@@ -83,7 +91,19 @@ class RungeKutta(object):
         # Hinweis: Das Butcher Schema ist in den Klassen-Variablen self._A, self._b      #
         #          und self._c gespeichert.                                              #
         #                                                                                #
-        ##################################################################################
+        #######################       DONE           #####################################
+        
+        ynew = zeros((d, ))
+        
+        K = self._compute_k(u, dt)
+        
+        y = zeros((d, ))
+        for i in range(s):
+            y += self._b[i] * K[:, i]
+        
+        unew[:-1] = u[:-1] + dt*y
+        unew[-1] = u[-1] + dt
+        
         return unew
 
 
@@ -124,7 +144,7 @@ class SemiImplicitRungeKutta(RungeKutta):
     def _compute_k(self, u, dt):
         d = self._d
         s = self._s
-        K = zeros((d, s))
+        K = zeros((s, d))
 
         # TODO zu implementieren.
 
@@ -138,5 +158,45 @@ class ImplicitRungeKutta(RungeKutta):
         s = self._s
 
         # TODO zu implementieren.
+        
+        K = zeros((s,d))
+        
+        def F(k):
+            temp = zeros((s*d, ))
+            y = zeros((d, ))
+            for i in range(s):
+                for j in range(s):
+                    
+                    y += dt*self._A[i, j] * k[j*d : (j+1)*d]
+                
+                temp[i*d : (i+1)*d] = self._f(u[-1] + self._c[i]*dt, u[:-1] + y)
+            
+            return k - temp
+        
+        init = zeros((d, s))
+        for i in range(s):
+            init[:, i] = self._f(u[-1], u[:-1])
+        K = fsolve(F, init)
+        
+        return K.reshape((s, d)).T
+        
+        
+        # def F(k):
+        #     tmp = zeros((s*d,))
+        #     for i in range(s):
+        #         targ = self._c[i]
+        #         yarg = zeros((d,))
+        #         for j in range(s):
+        #             yarg += self._A[i,j] * k[j*d:(j+1)*d]
 
-        return K
+        #         tmp[i*d:(i+1)*d] = self._f(u[-1] + dt*targ, u[:-1] + dt*yarg)
+        #     return tmp - k
+
+        # K0 = tile(self._f(u[-1], u[:-1]), s)
+        # K = fsolve(F, K0)
+        # K = K.reshape((s,d)).T
+
+        # return K
+
+
+    

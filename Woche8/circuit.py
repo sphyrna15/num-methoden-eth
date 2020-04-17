@@ -26,8 +26,24 @@ def IM(u0, f, N, T, t0=0):
     #                                                              #
     # TODO: Implementieren Sie hier die implizite Mittelpunksregel #
     #                                                              #
-    ################################################################
+    ###############          DONE           ########################
+    
+    u[:,0] = u0
+    
+    for i, time in enumerate(t[:-1]):
+        
+        F = lambda uj: u[:,i] + h*f(time+0.5*h, 0.5*u[:,i]+0.5*uj) - uj
+        u[:, i+1] = fsolve(F, u[:,i] + h*f(time, u[:, i]))
+    
     return t, u
+
+
+# Butcher Schema für implizite Mittelpunktsregel
+im_A = array([[0.5]])
+im_b = array([1.0])
+im_c = array([0.5])
+
+
 
 # Runge-Kutta Gauss Collocation of Order 6
 bs_A = array([[ 5.0/36.0,               2.0/9-sqrt(15)/15.0, 5.0/36.0-sqrt(15)/30.0],
@@ -47,8 +63,14 @@ def run_im():
     # TODO: Loesen Sie die Gleichung mit der impliziten Mittelpunktsregel #
     #       und obigen Anfangswerten Ioim = [y(t0), y'(t0)]               #
     #                                                                     #
-    #######################################################################
-    return "im", t, y
+    ################       DONE           #################################
+    
+    start = time.perf_counter()
+    t, y = IM(Ioim, f, nsteps, T)
+    end = time.perf_counter()
+    imtime = end - start
+    
+    return "im", t, y, imtime
 
 
 def run_rk():
@@ -59,6 +81,7 @@ def run_rk():
     #       obige Import korrekt funktioniert                       #
     #################################################################
     Iork = array([0.0, 0.0])
+    
     ########################################################################
     #                                                                      #
     # TODO: Loesen Sie die Gleichung mit der Runge-Kutta Gauss-Collocation #
@@ -66,8 +89,19 @@ def run_rk():
     #       die RungeKutta Klasse: erstellen Sie eine Instanz und rufen    #
     #       Sie die Member-Methoden korrekt auf.                           #
     #                                                                      #
-    ########################################################################
-    return "rk", t, y
+    ###############          DONE          #################################
+    RK = ImplicitRungeKutta(bs_A, bs_b, bs_c)
+    RK.set_rhs(f)
+    RK.set_iv(0.0, Iork)
+    
+    start = time.perf_counter()
+    t, y = RK.integrate(T, nsteps)
+    end = time.perf_counter()
+    rktime = end - start
+    
+    print("RungeKutta Verfahren benötigt %s Sekunden" % (rktime))
+    
+    return "rk", t, y, rktime
 
 
 def run_ode45():
@@ -79,8 +113,16 @@ def run_ode45():
     # TODO: Loesen Sie die Gleichung mit der dem ode45 Integrator  #
     #       und obigen Anfangswerten Io45 = [y(t0), y'(t0)]        #
     #                                                              #
-    ################################################################
-    return "ode45", t, y.T
+    ###############        DONE          ###########################
+    
+    start = time.perf_counter()
+    t, y = ode45(f, [0.0, T], Io45, stat='on', reltol = 1e-8, abstol = 1e-8, initialstep = 2e-5)
+    end = time.perf_counter()
+    ode45time = end - start
+    
+    print("Ode45 Verfahren benötigt %s Sekunden" % (ode45time))
+    
+    return "ode45", t, y.T, ode45time
 
 
 
@@ -110,8 +152,9 @@ if __name__ == '__main__':
     #                                                           #
     # TODO: Implementieren Sie hier die rechte Seite f(t, y(t)) #
     #                                                           #
-    #############################################################
-
+    ###############      DONE          ##########################
+    
+    f = lambda t, y: array([y[1], Id(t,y[1]) / (L*C) - y[1] / (R*C) - y[0] / (L*C)])
 
     # Number of periods
     np = 1
@@ -135,21 +178,22 @@ if __name__ == '__main__':
     # TODO: Waehlen Sie hier die gewuenschte Methode durch aus/einkommentieren #
     #                                                                          #
     ############################################################################
-    #methodname, t, y = run_im()
-    #methodname, t, y = run_rk()
-    methodname, t, y = run_ode45()
+    # methodname, t, y , methodtime = run_im()
+    methodname, t, y, methodtime = run_rk()
+    # methodname, t, y, methodtime = run_ode45()
+    print(methodname + " Verfahren benötigt %s Sekunden" % (methodtime))
 
     ###################################################
     #                                                 #
     # TODO: Berechnen Sie hier die fehlenden Groessen #
     #                                                 #
-    ###################################################
+    ###########    DONE    ############################
 
-    Vout = zeros_like(t)
-    IR = zeros_like(t)
-    IC = zeros_like(t)
-    ID = zeros_like(t)
-    IL = zeros_like(t)
+    Vout = y[1,:] * L
+    IR = Vout / R
+    IC = C*L * f(t, y)[1,:]
+    ID = Id(t, y[1,:])
+    IL = y[0,:]
 
 
     figure()
@@ -160,7 +204,7 @@ if __name__ == '__main__':
     grid(True)
     ylim(-Vo - 1, Vo + 1)
     legend(loc='lower right')
-    savefig('vosc_'+methodname+'.pdf')
+    # savefig('vosc_'+methodname+'.pdf')
 
     figure()
     plot(t, Vin(t), label=r'$V_{in}(t)$')
@@ -171,7 +215,7 @@ if __name__ == '__main__':
     xlim(0.016, 0.021)
     ylim(-Vo - 1, Vo + 1)
     legend(loc='upper right')
-    savefig('vosc_zoom_'+methodname+'.pdf')
+    # savefig('vosc_zoom_'+methodname+'.pdf')
 
     figure()
     plot(t, squeeze(ID), label=r'$I_D(t)$')
@@ -182,7 +226,7 @@ if __name__ == '__main__':
     xlabel(r'$t \; [s]$')
     ylabel(r'$I \; [A]$')
     legend(loc='upper right')
-    savefig('iosc_'+methodname+'.pdf')
+    # savefig('iosc_'+methodname+'.pdf')
 
     figure()
     #plot(t, squeeze(ID), label=r'$I_D(t)$')
@@ -195,6 +239,6 @@ if __name__ == '__main__':
     xlabel(r'$t \; [s]$')
     ylabel(r'$I \; [A]$')
     legend(loc='upper right')
-    savefig('iosc_zoom_'+methodname+'.pdf')
+    # savefig('iosc_zoom_'+methodname+'.pdf')
 
     show()
