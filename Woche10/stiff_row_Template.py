@@ -38,9 +38,22 @@ def row_2_step(f, Jf, y0, dt):
     #                                                  #
     # TODO: Implementieren Sie die ROW-2 Methode hier. #
     #                                                  #
-    ####################################################
+    a = 1.0 / (2.0 + np.sqrt(2.0))
+    
+    n = y0.shape[0]
+    I = np.identity(n)
+    J = Jf(y0)
+    leftside = I - a*dt*J
+    
+    right_1 = f(y0)
+    k1 = solve(leftside, right_1)
+    
+    right_2 = f(y0+0.5*dt*k1) - a*dt*np.dot(J,k1)
+    k2 = solve(leftside, right_2)
 
-    return 0
+    return y0 + dt*k2
+
+
 def row_2(f, Jf, y0, dt, n_steps):
     return integrate(f, Jf, y0, dt, n_steps, row_2_step)
 
@@ -64,8 +77,28 @@ def row_3_step(f, Jf, y0, dt):
     #                                                  #
     # TODO: Implementieren Sie die ROW-3 Methode hier. #
     #                                                  #
-    ####################################################
-    return 0
+    a = 1.0 / (2.0 + np.sqrt(2.0))
+    d31 = - (4.0 + np.sqrt(2.0)) / (2.0 + np.sqrt(2.0))
+    d32 = (6.0 + np.sqrt(2.0)) / (2.0 + np.sqrt(2.0))
+    
+    n = y0.shape[0]
+    I = np.identity(n)
+    J = Jf(y0)
+    leftside = I - a*dt
+    
+    right_1 = f(y0)
+    k1 = solve(leftside, right_1)
+    
+    right_2 = f(y0+0.5*dt*k1) - a*dt*np.dot(J,k1)
+    k2 = solve(leftside, right_2)
+
+    right_3 = f(y0+dt*k2) - d31*dt*np.dot(J,k1) - d32*dt*np.dot(J,k2)
+    k3 = solve(leftside, right_3)
+    
+    
+    return y0 + dt/6.0*(k1 + 4.0*k2 + k3)
+
+
 def row_3(f, Jf, y0, dt, n_steps):
     return integrate(f, Jf, y0, dt, n_steps, row_3_step)
 
@@ -113,7 +146,48 @@ def aufgabe_b():
     #       den ROW Methoden und plotten Sie die     #
     #       Loesung und den Fehler.                  #
     #                                                #
-    ##################################################
+    c = 0.01
+    lamb = 25
+    T = 2.0
+    N = 100
+    dt = T / float(N)
+    
+    ode = LogisticODE(l)
+    f = ode.rhs
+    J = ode.jacobian
+    y0 = np.array([c])
+    
+    t2, y2 = row_2(f, J, y0, dt, N)
+    t3, y3 = row_3(f, J, y0, dt, N)
+    t = np.linspace(0.0, T, N+1)
+    y = ode.exact(y0, t)
+    
+    plt.figure()
+    plt.plot(t, y, "-go", label="Exakte Lösung $y(t)$, $\lambda = %s$" % lamb)
+    plt.plot(t2, y2, "-r", label="ROW 2 $y(t)$, $\lambda = %s$" % lamb)
+    plt.plot(t3, y3, "b", label="ROW 3 $y(t)$, $\lambda = %s$" % lamb)
+    plt.title("ROW Methoden für logistische DLG")
+    plt.xlabel(r"Zeit $t$")
+    plt.ylabel(r"Lösung $y(t)$")
+    plt.legend(loc='best')
+    plt.grid()
+    plt.show()
+    
+    plt.figure()
+    plt.plot(t, np.abs(y2 - y), "-b", label="error ROW 2")
+    plt.plot(t, np.abs(y3 - y), "-g", label="error ROW 3")
+    plt.xlabel(r"Zeit $t$")
+    plt.ylabel(r"Absolutbetrag Fehler")
+    plt.title("Fehler für ROW Methoden")
+    plt.legend(loc='best')
+    plt.grid()
+    plt.show()
+    
+    return None
+    
+    
+    
+    
 
 
 ###################
@@ -136,7 +210,32 @@ def aufgabe_c():
         # TODO: Loesen Sie die logistische Gleichung mit #
         #       den ROW Methoden.                        #
         #                                                #
-        ##################################################
+    steps = 2**np.arange(4,13)
+    e2 = np.empty(steps.size)
+    e3 = np.empty_like(e2)
+
+    for k, n in enumerate(steps):
+        t, h = np.linspace(0.0, T, n+1, retstep=True)
+        t2, y2 = row_2(f, Jf, y0, h, n)
+        t3, y3 = row_3(f, Jf, y0, h, n)
+
+        exact = ode.exact(y0, T)
+
+        e2[k] = np.abs(y2[-1,0] - exact[0])
+        e3[k] = np.abs(y3[-1,0] - exact[0])
+
+
+    plt.figure()
+    plt.loglog(steps, e2, "r", label="ROW 2")
+    plt.loglog(steps, e3, "b", label="ROW 3")
+    plt.loglog(steps, 1e-5*(T/steps)**2, "-k", label="$n^{-2}$")
+    plt.loglog(steps, 1e-5*(T/steps)**3, "--k", label="$n^{-3}$")
+    plt.xlabel(r"Anzahl Schritte $N$")
+    plt.ylabel(r"Absoluter Fehler für $T = %.1f$" % T)
+    plt.legend(loc="best")
+    plt.grid()
+
+    plt.show()
 
 
 ###################
@@ -182,12 +281,12 @@ def odeintadapt(Psilow, Psihigh, t_end, y0, fy0=None, dt0=None, dtmin=None, relt
     rejected = []
     error_estimates = [0.0]
 
-    while ti < t_end and dt > dtmin:
-        #########################################################
-        #                                                       #
-        # TODO: Implementieren Sie hier die adaptive Strategie. #
-        #                                                       #
-        #########################################################
+    # while ti < t_end and dt > dtmin:
+    #     #########################################################
+    #     #                                                       #
+    #     # TODO: Implementieren Sie hier die adaptive Strategie. #
+    #     #                                                       #
+    #     #########################################################
 
     n = yi.shape[0]
     t = np.array(t).reshape(-1)
