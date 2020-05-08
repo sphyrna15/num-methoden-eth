@@ -13,7 +13,24 @@ def GR(a):
     r -- Matrix R
     """
     # TODO implement GS
-    return np.array([1]), np.array([1])
+    # DONE
+    
+    m, n = a.shape
+    Q = np.zeros((m,n))
+    R = np.zeros((n,n))
+    
+    for j in range(n):
+        col_j = a[:,j]
+        
+        for i in range(j):
+            R[i,j] = np.dot(Q[:,i], col_j)
+            col_j = col_j - R[i,j] * Q[:,i]
+        
+        R[j,j] = np.linalg.norm(col_j)
+        Q[:,j] = col_j / R[j,j]
+            
+    
+    return Q, R
 
 
 def GRmod(a):
@@ -27,7 +44,22 @@ def GRmod(a):
     r -- Matrix R
     """
     # TODO implement modified GS
-    return np.array([1]), np.array([1])
+    # DONE
+    
+    m, n = a.shape
+    Q = np.zeros((m,n))
+    R = np.zeros((n,n))
+    V = a
+    
+    for j in range(n):
+        R[j,j] = np.linalg.norm(V[:,j])
+        Q[:,j] = V[:,j] / R[j,j]
+        
+        for k in range(j+1, n):
+            R[k,j] = np.dot(Q[:,j], V[:,k])
+            V[:,k] = V[:,k] - R[k,j] * Q[:,j]
+    
+    return Q, R
 
 
 # Matrix Definition
@@ -54,7 +86,7 @@ def plot_quality(q, label, filename):
     im = plt.imshow(np.log10(abs(np.dot(q.T,q)-np.eye(n))+1e-16),
                     vmin=-16, vmax=1, interpolation='nearest')
     plt.colorbar()
-    plt.savefig(filename)
+    # plt.savefig(filename)
 
 plot_quality(q1, "numpy.qr", "img/qr-errors-qr.png")
 plot_quality(q2, "GS", "img/qr-errors-gs.png")
