@@ -92,4 +92,48 @@ print(rc, matrix_rank(Cd) )
 # TODO: Finde x0, xg xa und xm #
 #####################################################################
 
+# Löse mit SVD wegen nicht voller Rang
+
+def lsqsvd(A,b,eps=1e-6):
+    
+    U,s,Vh = svd(A) # python routine for singular value decomposition
+    r = 1 + np.where(s/s[0] > eps)[0].max() # numerical rank
+    y = np.dot(Vh[:r,:].T, np.dot(U[:,:r].T, b) / s[:r])
+    
+    return y
+
+#x0 mit QR Zerlegung lösen python software lösen
+x0, res0, rank0, svd0 = lstsq(C, d, rcond = None)
+res0 = norm(d - np.dot(C, x0))
+x0norm = norm(x0)
+
+print('-' * 120)
+print('x0 solution' + ' '*65 + 'residual res0' + ' '*7 + ' norm of x0')
+print(x0, res0, x0norm)
+
+
+#Löse mit SVD Zerlegung
+
+xg = lsqsvd(C, d)
+resg = norm(d - np.dot(C, xg))
+xgnorm = norm(xg)
+
+print('-' * 120)
+print('xg solution' + ' '*65 + 'residual resg' + ' '*7 + ' norm of xg')
+print(xg, resg, xgnorm)
+
+xa = lsqsvd(A, b)
+resa = norm(b - np.dot(A, xa))
+xanorm = norm(xa)
+
+print('-' * 120)
+print('xa solution' + ' '*65 + 'residual resa' + ' '*7 + ' norm of xa')
+print(xa, resa, xanorm)
+
+
+
+
+
+
+
 
