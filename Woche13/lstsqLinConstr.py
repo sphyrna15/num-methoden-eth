@@ -131,6 +131,9 @@ print('xa solution' + ' '*65 + 'residual resa' + ' '*7 + ' norm of xa')
 print(xa, resa, xanorm)
 
 
+# Nebenbedingungen 
+
+
 
 
 
